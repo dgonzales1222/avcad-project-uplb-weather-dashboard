@@ -33,22 +33,28 @@ import config
 # Open-Meteo Historical Weather API (ERA5 reanalysis).
 ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
 
-# Hourly variables — the heat index needs temperature + relative humidity at
-# hourly resolution; precipitation and wind feed the General Weather page.
+# Variables are chosen to mirror the REAL UPLB-NAS station record (all daily):
+#   max_temp, min_temp, wet_bulb_temp, relative_humidity, precipitation,
+#   wind_speed (average), wind_direction, station_pressure.
+# Open-Meteo's daily endpoint exposes temperature, precipitation and dominant
+# wind direction natively; RH, wet-bulb, station pressure and the station's
+# *average* wind speed have no daily aggregate, so they are derived from the
+# hourly pull in Phase 2. Hourly is therefore an intermediate, daily is the
+# canonical contract that the station data will later slot into (Phase 8).
 HOURLY_VARS = [
-    "temperature_2m",        # °C
-    "relative_humidity_2m",  # %
-    "precipitation",         # mm
-    "wind_speed_10m",        # km/h
+    "temperature_2m",           # °C   validation / heat-index input
+    "relative_humidity_2m",     # %    -> daily mean = station RH
+    "wet_bulb_temperature_2m",  # °C   -> daily mean = station wet-bulb temp
+    "surface_pressure",         # hPa  -> daily mean = station pressure
+    "wind_speed_10m",           # m/s  -> daily mean = station average wind
 ]
 
-# Daily variables — convenience aggregates for climatology summaries.
 DAILY_VARS = [
-    "temperature_2m_max",  # °C
-    "temperature_2m_min",  # °C
-    "temperature_2m_mean", # °C
-    "precipitation_sum",   # mm
-    "wind_speed_10m_max",  # km/h
+    "temperature_2m_max",           # °C  = station max temp
+    "temperature_2m_min",           # °C  = station min temp
+    "temperature_2m_mean",          # °C  bonus (station has no mean sheet)
+    "precipitation_sum",            # mm  = station precipitation
+    "wind_direction_10m_dominant",  # °   -> compass = station wind direction
 ]
 
 # HTTP cache (so re-runs don't re-hit the API) + retry on transient failures.
@@ -88,6 +94,7 @@ def _fetch(start: str, end: str, *, granularity: str, variables: list[str]) -> p
         "end_date": end,
         granularity: variables,
         "timezone": config.TZ,
+        "wind_speed_unit": "ms",  # match the station's m/s wind speed
     }
     response = _client().weather_api(ARCHIVE_URL, params=params)[0]
     offset = response.UtcOffsetSeconds()
