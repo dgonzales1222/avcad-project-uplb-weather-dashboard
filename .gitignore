@@ -18,6 +18,9 @@ env/
 data/raw/
 data/*.db
 
+# --- HTTP response cache (Open-Meteo client) ---
+.cache/
+
 # --- Editor / IDE ---
 .vscode/
 .idea/
