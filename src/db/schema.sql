@@ -1,0 +1,5 @@
+-- Relational schema for the weather database (data/weather.db).
+-- Implemented in Phase 2. Planned tables (see BUILD_GUIDE.md):
+--   station(station_id, name, latitude, longitude, elevation, source)
+--   variable(variable_id, name, unit, description)
+--   observation_daily(station_id, date, variable_id, value)

@@ -1,0 +1,10 @@
+# UPLB-NAS Weather Dashboard — dependencies
+
+pandas
+streamlit
+plotly
+prophet
+openmeteo-requests
+requests-cache
+retry-requests
+pytest
