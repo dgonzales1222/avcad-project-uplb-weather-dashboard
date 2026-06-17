@@ -94,7 +94,7 @@ that module and a re-run of the ingestion process.
 | 0     | Project setup and documentation               | Complete    |15/06/2026|
 | 1     | Open-Meteo data ingestion                     | Complete    |16/06/2026|
 | 2     | Relational database design and loading        | Ongoing     | 17/06/2026 but currently testing|
-| 3     | Heat-index module with unit tests             | Pending     |
+| 3     | Heat-index module with unit tests             | Ongoing     |
 | 4     | General Weather page                          | Pending     |
 | 5     | Climate Insights and heat-index page          | Pending     |
 | 6     | Short-term forecast (Prophet)                 | Pending     |
