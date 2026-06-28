@@ -15,13 +15,7 @@ A static preview of the dashboard design is hosted on GitHub Pages:
 
 **https://dgonzales1222.github.io/uplb-weather-dashboard/**
 
-> **Disclaimer.** GitHub Pages serves static files only, so this link shows how the dashboard is
-> *meant to look* — it is **not the live application**, and its charts are placeholder mock-ups
-> rather than figures computed from the database. Serving this design as a fully interactive public
-> site would require a complete web stack (for example, a Django back end with a dedicated front
-> end). For now, the interactive dashboard — real Open-Meteo data, live charts, and the heat-index
-> forecast — is the **Dash application** in this repository: run it locally (see below) or deploy it
-> to Render. The same UPLB design is implemented directly in that Dash app.
+> **Disclaimer.** GitHub Pages only serves static files, so this link shows the dashboard’s design, not the live application. The charts here are mock-ups, not figures generated from the database. The interactive dashboard — with real Open-Meteo data, live charts, and the heat-index forecast — is the Dash app in this repository. Run it locally or deploy it to Render. The same UPLB design is implemented in that app.
 
 ## Data Source
 
