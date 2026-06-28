@@ -76,6 +76,24 @@ so the deployed server is **torch-free**: it installs the slim `requirements-ren
 database at build time (`python -m src.data.ingest`), and runs
 `gunicorn src.dashapp.app:server`. Re-run the precompute step whenever the data is refreshed.
 
+## Documentation & Notebooks
+
+- [`docs/heat_index_calculation.md`](docs/heat_index_calculation.md) — heat-index formula and
+  PAGASA danger bands, with sources.
+- [`docs/lstm_forecast.md`](docs/lstm_forecast.md) — short-term LSTM forecast methodology.
+- [`notebooks/lstm_forecast_development.ipynb`](notebooks/lstm_forecast_development.ipynb) —
+  end-to-end LSTM development with a rigorous evaluation (baselines, rolling-origin backtest, MASE,
+  skill score, Diebold–Mariano). It reads the database directly, and its final cell regenerates the
+  forecast artifact the live app serves.
+
+The notebook needs a few extra libraries (not required to run or deploy the app); install them
+alongside the main requirements:
+
+```bash
+pip install -r requirements.txt -r requirements-notebook.txt
+jupyter lab notebooks/lstm_forecast_development.ipynb
+```
+
 ## System Architecture
 
 ```
@@ -97,8 +115,11 @@ that module and a re-run of the ingestion process.
 .
 ├── requirements.txt          Full dependencies for local development (includes PyTorch)
 ├── requirements-render.txt   Slim, torch-free dependencies used for deployment
+├── requirements-notebook.txt Extra dependencies for the analysis notebook
 ├── render.yaml               Render deployment blueprint
 ├── data/                     Raw downloads and the SQLite database (excluded from version control)
+├── docs/                     Methodology docs (heat index, LSTM forecast)
+├── notebooks/                Jupyter notebook — LSTM development & evaluation
 ├── src/
 │   ├── data/                 Data retrieval, cleaning, and ingestion
 │   ├── db/                   Relational schema and read-only queries

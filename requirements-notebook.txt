@@ -1,0 +1,13 @@
+# Extra dependencies for the analysis notebook
+# (notebooks/lstm_forecast_development.ipynb).
+#
+# Install alongside the main requirements:
+#     pip install -r requirements.txt -r requirements-notebook.txt
+#
+# These are NOT needed to run or deploy the dashboard — only the notebook.
+
+matplotlib
+scipy
+statsmodels
+jupyterlab
+ipykernel
