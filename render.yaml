@@ -1,0 +1,16 @@
+# Render Blueprint — deploy the Dash dashboard (free tier).
+# New + → Blueprint → pick this repo. Render reads this file.
+services:
+  - type: web
+    name: uplb-weather-dashboard
+    runtime: python
+    plan: free
+    # Install slim (torch-free) deps, then build the SQLite DB from Open-Meteo.
+    buildCommand: "pip install -r requirements-render.txt && python -m src.data.ingest"
+    # Dash exposes the Flask server as `server` in src/dashapp/app.py.
+    startCommand: "gunicorn src.dashapp.app:server --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: PYTHONPATH       # so `src...` imports resolve from the repo root
+        value: "."

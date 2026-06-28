@@ -1,0 +1,10 @@
+# Slim runtime deps for Render deployment (torch-free — the forecast is precomputed
+# into src/dashapp/forecast_precomputed.json, so the server never trains the LSTM).
+pandas
+plotly
+dash
+dash-bootstrap-components
+openmeteo-requests
+requests-cache
+retry-requests
+gunicorn

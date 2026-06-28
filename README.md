@@ -39,9 +39,9 @@ modifying the database, analysis, or dashboard components.
 
 ## Technology Stack
 
-Python 3.11 or later, with pandas for data processing, SQLite for storage, Streamlit and
-Plotly for the web interface, Prophet for forecasting, and the openmeteo-requests client for
-data retrieval.
+Python 3.12 or later, with pandas for data processing, SQLite for storage, Dash and Plotly
+for the web interface, a PyTorch LSTM for the short-term heat-index forecast, and the
+openmeteo-requests client for data retrieval.
 
 ## Installation and Usage
 
@@ -54,14 +54,22 @@ source venv/bin/activate          # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
 python -m src.data.ingest         # retrieve data and build the database (first run only)
-streamlit run src/app/Home.py     # available at http://localhost:8501
+python -m src.dashapp.app         # Dash app at http://localhost:8050
 ```
+
+## Deployment
+
+The app deploys to [Render](https://render.com) (free tier) via `render.yaml`. The forecast is
+**precomputed offline** (`python -m src.models.precompute` → `src/dashapp/forecast_precomputed.json`)
+so the deployed server is **torch-free**: it installs the slim `requirements-render.txt`, rebuilds the
+database at build time (`python -m src.data.ingest`), and runs
+`gunicorn src.dashapp.app:server`. Re-run the precompute step whenever the data is refreshed.
 
 ## System Architecture
 
 ```
-Open-Meteo API ──fetch──> data/raw/ ──clean──> SQLite (data/weather.db) ──> Streamlit application
-  (sources.py)                       (clean.py / ingest.py)                  (src/app/)
+Open-Meteo API ──fetch──> data/raw/ ──clean──> SQLite (data/weather.db) ──> Dash application
+  (sources.py)                       (clean.py / ingest.py)                  (src/dashapp/)
 ```
 
 > **Note:** `data/` — both the raw downloads (`data/raw/`) and the SQLite database

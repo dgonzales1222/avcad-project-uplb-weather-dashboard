@@ -6,6 +6,7 @@ Weather time-series callback returns graphs. No browser needed.
 
 Run with:  pytest
 """
+import json
 import sqlite3
 import sys
 
@@ -119,15 +120,33 @@ def test_trend_figure_and_legend(dashapp):
     assert len(legend) == 4                   # 4 PAGASA danger-band legend entries
 
 
-def test_forecast_callback_returns_figure_and_metrics(dashapp, monkeypatch):
+def test_forecast_callback_returns_figure_and_metrics(dashapp, monkeypatch, tmp_path):
     import plotly.graph_objects as go
+    from src.dashapp import data
     from src.models import forecast
-    # Tiny LSTM so training is fast on the synthetic DB.
+    # Force the live-training fallback (ignore any committed artifact) + tiny LSTM.
+    monkeypatch.setattr(data, "_FORECAST_FILE", tmp_path / "absent.json")
     monkeypatch.setattr(forecast, "EPOCHS", 2)
     monkeypatch.setattr(forecast, "LOOKBACK", 10)
     monkeypatch.setattr(forecast, "UNITS", 8)
+    data.heat_index_forecast.cache_clear()
     ci = _ci_module()
     fig, metrics = ci.update_forecast(7)
     assert isinstance(fig, go.Figure)
     assert len(fig.data) == 3                    # uncertainty band + actual + forecast
     assert metrics is not None
+
+
+def test_forecast_reads_precomputed_artifact(dashapp, monkeypatch, tmp_path):
+    """Deploy path: serve the forecast from JSON without importing torch."""
+    from src.dashapp import data
+    artifact = tmp_path / "fc.json"
+    artifact.write_text(json.dumps({"14": {
+        "forecast": [{"ds": "2026-01-01", "yhat": 33.0, "yhat_lower": 31.0, "yhat_upper": 35.0}],
+        "metrics": {"mae": 2.4, "rmse": 2.8},
+    }}))
+    monkeypatch.setattr(data, "_FORECAST_FILE", artifact)
+    data.heat_index_forecast.cache_clear()
+    fc, metrics = data.heat_index_forecast(14)
+    assert metrics == {"mae": 2.4, "rmse": 2.8}
+    assert list(fc["ds"].dt.strftime("%Y-%m-%d")) == ["2026-01-01"]

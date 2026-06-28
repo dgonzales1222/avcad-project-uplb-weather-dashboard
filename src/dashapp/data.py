@@ -3,12 +3,19 @@
 The SQLite database is static, so each query is loaded once and cached. The
 underlying logic lives in src/db/queries.py (shared with the old Streamlit app).
 """
+import json
 from functools import lru_cache
+from pathlib import Path
 
 import pandas as pd
 
 from src.db import queries
 from src.features import heat_index
+
+# Precomputed forecast artifact (written by `python -m src.models.precompute`).
+# When present, the app reads it instead of training — so the deployed server
+# needs neither PyTorch nor any training.
+_FORECAST_FILE = Path(__file__).resolve().parent / "forecast_precomputed.json"
 
 
 @lru_cache(maxsize=1)
@@ -46,14 +53,35 @@ def heat_index_daily() -> pd.DataFrame:
     return out
 
 
+def _load_precomputed(horizon: int):
+    """Read the committed forecast artifact for `horizon` (no torch). None if absent."""
+    if not _FORECAST_FILE.exists():
+        return None
+    try:
+        entry = json.loads(_FORECAST_FILE.read_text())[str(horizon)]
+    except (ValueError, KeyError):
+        return None
+    fc = pd.DataFrame(entry["forecast"])
+    fc["ds"] = pd.to_datetime(fc["ds"])
+    return fc, entry["metrics"]
+
+
 @lru_cache(maxsize=4)
 def heat_index_forecast(horizon: int = 14):
-    """(forecast_df, {mae, rmse}) for the daily heat index; cached per horizon."""
-    from src.models import forecast
+    """(forecast_df, {mae, rmse}) for the daily heat index; cached per horizon.
+
+    Prefers the precomputed artifact (no torch — used in deployment); falls back to
+    training the LSTM live only if the artifact is missing (local dev).
+    """
+    precomputed = _load_precomputed(horizon)
+    if precomputed is not None:
+        return precomputed
+
     series = heat_index_daily()["hi_c"]
     if series.empty:
         empty = pd.DataFrame(columns=["ds", "yhat", "yhat_lower", "yhat_upper"])
         return empty, {"mae": float("nan"), "rmse": float("nan")}
+    from src.models import forecast
     return forecast.fit_forecast(series, horizon), forecast.backtest(series, horizon)
 
 
